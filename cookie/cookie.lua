@@ -1,3 +1,5 @@
+-- "foo=bar;      hello=world" is valid cookie, but should kick space
+
 local sub = string.sub
 
 
@@ -18,20 +20,17 @@ local function fetch_cookie_table(self)
     local EXPECT_KEY = 1
     local EXPECT_VALUE = 2
     local state = EXPECT_KEY
-    local hit
 
     local cookie_table = {}
     local key, value
 
-    while i <= cookie_len  and j <= cookie_len do
+    while j <= cookie_len do
         if state == EXPECT_KEY then
             if sub(cookie, j, j) == "=" then
                 key = sub(cookie, i, j - 1)
                 --print("key: ", key)
                 i = j + 1
-                j = i
                 state = EXPECT_VALUE
-                hit = true
             end
         elseif state == EXPECT_VALUE then
             if sub(cookie, j, j) == ";" then
@@ -39,16 +38,11 @@ local function fetch_cookie_table(self)
                 --print("value: ", value)
                 cookie_table[key] = value
                 i = j + 1
-                j = i
                 state = EXPECT_KEY
-                hit = true
             end
         end
-        if not hit then
-            j = j + 1
-        end
 
-        hit = false
+        j = j + 1
 
         --ngx.sleep(0.1)
         --ngx.log(ngx.ERR, "i: ", i, " j: ", j)
