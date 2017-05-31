@@ -19,6 +19,7 @@ local function fetch_cookie_table(self)
 
     local EXPECT_KEY = 1
     local EXPECT_VALUE = 2
+    local EXPECT_SPACE = 3
     local state = EXPECT_KEY
 
     local cookie_table = {}
@@ -38,8 +39,14 @@ local function fetch_cookie_table(self)
                 --print("value: ", value)
                 cookie_table[key] = value
                 i = j + 1
-                state = EXPECT_KEY
+                state = EXPECT_SPACE
+                key, value = nil, nil
             end
+        elseif state == EXPECT_SPACE then
+            if sub(cookie, j, j) ~= " " then
+                i = j
+                state = EXPECT_KEY 
+            end                 
         end
 
         j = j + 1
@@ -48,7 +55,7 @@ local function fetch_cookie_table(self)
         --ngx.log(ngx.ERR, "i: ", i, " j: ", j)
     end
 
-    if state == EXPECT_VALUE then
+    if key ~= nil and value == nil then
         cookie_table[key] = sub(cookie, i, -1)
     end
                 
